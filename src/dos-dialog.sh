@@ -23,7 +23,7 @@ elif [ ${SYN} = on ]; then
     PROTOCOL=TCP
     SYN=true
 fi
-BACKTITLE="Pro DoS v0.1337a2"
+BACKTITLE="Pro DoS v0.1337b1"
 function func_history {
 echo "Protocol: ${PROTOCOL}"
 echo "IP: ${LAST_IP}"
