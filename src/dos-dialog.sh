@@ -1,9 +1,10 @@
 #!/bin/bash
-LAST_IP=`cat ~/.dos_history/.last_dos | grep -w 'Last_IP:' | awk '{printf $2}'`
-LAST_PROTOCOL=`cat ~/.dos_history/.last_dos | grep -w 'Last_Protocol:' | awk '{printf $2}'`
-LAST_PORT=`cat ~/.dos_history/.last_dos | grep -w 'Last_Port:' | awk '{printf $2}'`
-LAST_PAYLOAD_SIZE=`cat ~/.dos_history/.last_dos | grep -w 'Last_Payload_Size:' | awk '{printf $2}'`
-LAST_SPOOF_HOST=`cat ~/.dos_history/.last_dos | grep -w 'Last_Spoof_Host:' | awk '{printf $2}'`
+DOS_HISTORY_FILE=~/.dos_history/.last_dos
+LAST_IP=`grep -w 'Last_IP:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
+LAST_PROTOCOL=`grep -w 'Last_Protocol:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
+LAST_PORT=`grep -w 'Last_Port:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
+LAST_PAYLOAD_SIZE=`grep -w 'Last_Payload_Size:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
+LAST_SPOOF_HOST=`grep -w 'Last_Spoof_Host:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
 UDP=off
 TCP=off
 SYN=off
@@ -23,7 +24,7 @@ elif [ ${SYN} = on ]; then
     PROTOCOL=TCP
     SYN=true
 fi
-BACKTITLE="Pro DoS v0.1337b1"
+BACKTITLE="Pro DoS v0.1337b2"
 function func_history {
 echo "Protocol: ${PROTOCOL}"
 echo "IP: ${LAST_IP}"
@@ -52,11 +53,11 @@ if [ "$1" = "History" ] || [ "$1" = "history" ]; then
     cd ~/.dos_history/
     select DOS_SESSION in *; do
 #    DOS_SESSION=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --fselect ~/.dos_history/ 20 50 --stdout`
-    LAST_IP=`cat ${DOS_SESSION} | grep -w 'Last_IP:' | awk '{printf $2}'`
-    LAST_PROTOCOL=`cat ${DOS_SESSION} | grep -w 'Last_Protocol:' | awk '{printf $2}'`
-    LAST_PORT=`cat ${DOS_SESSION} | grep -w 'Last_Port:' | awk '{printf $2}'`
-    LAST_PAYLOAD_SIZE=`cat ${DOS_SESSION} | grep -w 'Last_Payload_Size:' | awk '{printf $2}'`
-    LAST_SPOOF_HOST=`cat ${DOS_SESSION} | grep -w 'Last_Spoof_Host:' | awk '{printf $2}'`
+    LAST_IP=`grep -w 'Last_IP:' ${DOS_SESSION} | awk '{printf $2}'`
+    LAST_PROTOCOL=`grep -w 'Last_Protocol:' ${DOS_SESSION} | awk '{printf $2}'`
+    LAST_PORT=`grep -w 'Last_Port:' ${DOS_SESSION} | awk '{printf $2}'`
+    LAST_PAYLOAD_SIZE=`grep -w 'Last_Payload_Size:' ${DOS_SESSION} | awk '{printf $2}'`
+    LAST_SPOOF_HOST=`grep -w 'Last_Spoof_Host:' ${DOS_SESSION} | awk '{printf $2}'`
     func_history
     done
     cd ${LAST_DIR}
