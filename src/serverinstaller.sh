@@ -114,7 +114,7 @@ select opt in ${BUKKIT_OPT}; do
 if [ "${opt}" = "Bukkit" ]; then
     lynx -dump -nonumbers http://ci.bukkit.org/job/dev-CraftBukkit/ > /tmp/bukkit
     LATEST_BUILD=`cat /tmp/bukkit | grep "Last successful build" | cut -f2 -d'(' | cut -f1 -d')'`
-    LATEST_REC_BUILD=`cat /tmp/bukkit | grep "Latest" | cut -f2 -d'(' | cut -f1 -d')'`
+    LATEST_REC_BUILD=`cat /tmp/bukkit | grep "Latest" | cut -f2 -d'(' | cut -f1 -d')' | sed -n 2p`
     echo "Latest Bukkit Recommended Build: ${LATEST_REC_BUILD}"
     echo "Latest Bukkit Build: ${LATEST_BUILD}"
     BUKKIT_SERVERS="Recommended Latest"
