@@ -67,7 +67,7 @@ elif [ ${SYN} = on ]; then
 elif [ ${ICMP} = on ]; then
     PROTOCOL=ICMP
 fi
-BACKTITLE="Pro DoS v0.1337b2"
+BACKTITLE="Pro DoS v0.1337b3"
 function func_history {
 echo "Protocol: ${PROTOCOL}"
 echo "IP: ${LAST_IP}"
@@ -106,8 +106,6 @@ if [ "$1" = "History" ] || [ "$1" = "history" ]; then
     cd ${LAST_DIR}
 fi
 #7:58PM 13/01/2012
-echo "TCP is ${TCP} UDP is ${UDP} SYN is ${SYN} ICMP is ${ICMP}"
-sleep 3
 opt=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --radiolist "What method of attack?" 11 30 4 \
 TCP TCP ${TCP} \
 UDP UDP ${UDP} \
@@ -135,9 +133,15 @@ Last_Payload_Size: ${PAYLOAD_SIZE}" | tee ~/.dos_history/.last_dos ~/.dos_histor
 }
 
 function countdown {
-    dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --infobox "Beginning attack in 3 seconds." 3 35
-    sleep 3
-    dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --infobox "Attack..." 3 25
+    COUNT=0
+    (
+    while test ${COUNT} != 99; do
+    echo ${COUNT} | dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --gauge "Beginning DDoS in 3 seconds." 6 50 0
+    COUNT=`expr ${COUNT} + 33`
+    sleep 1
+    done
+    )
+    echo 99 | dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --gauge "Beginning DDoS in 3 seconds." 6 50 99
 }
 
 if [ "${opt}" = "TCP" ]; then
