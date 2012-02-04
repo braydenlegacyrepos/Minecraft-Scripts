@@ -1,6 +1,10 @@
 #!/bin/bash
 LATEST_VER=`curl http://ess.khhq.net/build/build.php?build=bt2 | sed 's/\.//g'`
 CURRENT_VER=`cat ~/minecraft/.ess_ver`
+if [ "${CURRENT_VER}" == "" ]; then
+    # Arbitrary version number
+    echo "100" > ~/minecraft/.ess_ver
+fi
 if [ "${LATEST_VER}" -gt "${CURRENT_VER}" ]; then
     screen -p 0 -S minecraft -X stuff "`printf "stop\r"`"
     sleep 3
