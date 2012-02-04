@@ -1,8 +1,6 @@
 #!/bin/bash
 LATEST_VER=`curl http://ess.khhq.net/build/build.php?build=bt2 | sed 's/\.//g'`
 CURRENT_VER=`cat ~/minecraft/.ess_ver`
-echo ${LATEST_VER}
-echo ${CURRENT_VER}
 if [ "${LATEST_VER}" -gt "${CURRENT_VER}" ]; then
     screen -p 0 -S minecraft -X stuff "`printf "stop\r"`"
     rm ~/minecraft/plugins/Essentials*.jar
