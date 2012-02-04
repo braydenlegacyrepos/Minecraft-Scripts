@@ -2,6 +2,7 @@
 LATEST_VER=`curl http://ess.khhq.net/build/build.php?build=bt2 | sed 's/\.//g'`
 CURRENT_VER=`cat ~/minecraft/.ess_ver`
 if [ "${CURRENT_VER}" == "" ]; then
+    touch ~/minecraft/.ess_ver
     # Arbitrary version number
     echo "100" > ~/minecraft/.ess_ver
 fi
