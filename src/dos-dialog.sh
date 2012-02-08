@@ -109,9 +109,12 @@ fi
 #7:58PM 13/01/2012
 function master {
     while read p; do
-#   Unnecessary jibber jabber until security is implemented.
     SLAVE_IP=`echo ${p} | awk '{printf $1}'`
     SLAVE_PORT=`echo ${p} | awk '{printf $2}'`
+    SLAVE_DAEMON_PORT=`echo ${p} | awk '{printf $3}'`
+    echo "Putting slave into listen state"
+    echo "listen start" | nc ${SLAVE_IP} ${SLAVE_DAEMON_PORT}
+    sleep 0.5
 # For this bit, thank Stackoverflow
     cat ${DOS_SESSION} | nc ${SLAVE_IP} ${SLAVE_PORT}
     echo "Sent attack details to ${SLAVE_IP} on port ${SLAVE_PORT}"
@@ -137,7 +140,11 @@ elif [ "$1" = "stop" ] || [  "$1" = "Stop" ]; then
     done < .ip_list
     exit 0
 elif [ "$1" = "slave" ] || [ "$1" = "Slave" ]; then
-    PORT_NUM=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "What port to listen on?" 8 40 111 --stdout`
+    if [ "$2" != "" ]; then
+        PORT_NUM=$2
+    else
+        PORT_NUM=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "What port to listen on?" 8 40 111 --stdout`
+    fi
     NETCAT=`nc -l ${PORT_NUM} > netcat.temp`
     DOS_HISTORY_FILE=netcat.temp
     LAST_IP=`grep -w 'Last_IP:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
@@ -147,6 +154,13 @@ elif [ "$1" = "slave" ] || [ "$1" = "Slave" ]; then
     LAST_SPOOF_HOST=`grep -w 'Last_Spoof_Host:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
     func_history
     rm netcat.temp
+    exit 0
+elif [ "$1" = "add" ] || [ "$1" = "Add" ]; then
+    SLAVE_IP=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Slave IP" 8 40 --stdout`
+    SLAVE_LISTEN_PORT=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Listen Port" 8 40 111 --stdout`
+    SLAVE_DAEMON_PORT=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Control Daemon Port" 8 40 112 --stdout`
+    echo "Adding ${SLAVE_IP} with the port ${SLAVE_LISTEN_PORT} and daemon port ${SLAVE_DAEMON_PORT} to ~/.dos_history/.ip_list"
+    echo "${SLAVE_IP} ${SLAVE_LISTEN_PORT} ${SLAVE_DAEMON_PORT}" >> ~/.dos_history/.ip_list
     exit 0
 fi
 
