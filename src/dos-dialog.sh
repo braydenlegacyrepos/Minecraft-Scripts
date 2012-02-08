@@ -67,7 +67,7 @@ elif [ ${SYN} = on ]; then
 elif [ ${ICMP} = on ]; then
     PROTOCOL=ICMP
 fi
-BACKTITLE="Pro DoS v0.1337b3"
+BACKTITLE="Pro DoS v0.1337rc1"
 function func_history {
 echo "Protocol: ${PROTOCOL}"
 echo "IP: ${LAST_IP}"
@@ -194,12 +194,12 @@ function countdown {
     COUNT=0
     (
     while test ${COUNT} != 99; do
-    echo ${COUNT} | dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --gauge "Beginning DDoS in 3 seconds." 6 50 0
+    echo ${COUNT} | dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --gauge "Beginning DoS in 3 seconds." 6 50 0
     COUNT=`expr ${COUNT} + 33`
     sleep 1
     done
     )
-    echo 99 | dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --gauge "Beginning DDoS in 3 seconds." 6 50 99
+    echo 99 | dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --gauge "Beginning DoS in 3 seconds." 6 50 99
 }
 
 if [ "${opt}" = "TCP" ]; then

@@ -1,0 +1,74 @@
+-----
+About
+-----
+
+The script, dos-dialog.sh, was created as an initiative to stop Donclurd from just using the Windows
+machine by making it convenient to perform the critical function of knocking people off the internet.
+It has since evolved into a fully featured program that has botnet functionality and can use many
+protocols to attack another server on the internet.
+
+Much of the interface is powered via dialog and the attacking is done via hping3.
+
+--------------
+Pre-requisites
+--------------
+
+You should have a fully featured shell environment like bash as well as dialog and hping3.
+Netcat is required for the botnet functions.
+
+-------
+Install
+-------
+
+It is possible to check that all the requisite software is installed and install the required files for the script
+to work via the install parameter. By doing ./dos-dialog.sh Install it'll inform the user of the status
+of the files/folders required and check whether dialog and hping3 are present.
+
+It does not give instructions on how to install both programs and it also is not guaranteed to work on
+other systems than the ones we use (Ubuntu). Dialog and hping3 are not included by default in the system
+but in Ubuntu's repos both are there.
+
+-----
+Usage
+-----
+
+dos-dialog.sh Install - perform the install functions to make sure that the script will work.
+
+dos-dialog.sh Unattended - automatically perform the DoS using the previous parameters.
+
+dos-dialog.sh History - offer the user to redo past attacks.
+
+dos-dialog.sh Slave - place it into listening mode. Optionally takes a second argument which is the port number
+to listen on, in case you want to launch the script without user input.
+
+dos-dialog.sh Master - read data from ~/.dos_history/.ip_list to connect to other machines to perform the attack.
+
+dos-dialog.sh Stop - read data from ~/.dos_history/.ip_list and send a stop command to the other machines.
+
+dos-dialog.sh Add - (UNTESTED) Add machines to ~/.dos_history/.ip_list
+
+dos-dialog.sh - Launch standalone attack with GUI options. Options will be populated with the last attack
+parameters, otherwise if you've performed install they should be replaced with example information.
+
+The arguments are case sensitive, however for those of us who are lazy it has been designed to also take
+non capitalised variants, e.g. dos-dialog.sh install.
+
+------
+Botnet
+------
+
+Specific functionality with this requires that the user have netcat installed, and also be able to run a script.
+
+The remote-stop.sh script should either run as a daemon or just in a screen or TTY that won't close.
+It accepts two bits of data at the moment, "stop hping3" which will stop the attack, and "listen start",
+which will launch dos-dialog.sh Slave 111 by default. It is possible to change this of course.
+
+It backgrounds dos-dialog.sh but stdout is written to the TTY that the daemon is running in.
+
+Presumably there's no limit on the amount of machines you can have this setup for, if you have a lot though,
+due to the standard delay to take into account lag and such, it might take a while for the script to complete.
+Modify dos-dialog.sh to not have a sleep in the function master to remove this delay and just send it without
+regard for lag etc.
+
+NEITHER I NOR ANY PERSON INVOLVED IN THE CREATION OF THIS SCRIPT TAKE ANY RESPONSIBILITY FOR THE
+DAMAGES THAT MAY BE CAUSED BY THE SCRIPT. NO EXCEPTIONS.
