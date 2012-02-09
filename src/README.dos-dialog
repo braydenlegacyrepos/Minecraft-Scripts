@@ -70,5 +70,22 @@ due to the standard delay to take into account lag and such, it might take a whi
 Modify dos-dialog.sh to not have a sleep in the function master to remove this delay and just send it without
 regard for lag etc.
 
+Instructions:
+
+On the remote machines, put dos-dialog.sh and remote-stop.sh on them. remote-stop.sh will run in an infinite loop
+and is not likely to ever reach a condition that will cause it to exit. I recommend you set it up as an init
+script. Configure remote-stop.sh to have a listening port of your choice (not necessarily required but some
+servers could actually be using that port) and also configure the SCRIPT_NAME variable to point to your script.
+
+Afterwards on the master server, use ./dos-dialog.sh Add to add all the machines, then test them. You could
+test them by doing ./dos-dialog.sh Master; ./dos-dialog.sh stop
+Select your target and the attack should stop fairly instantly as the next command would run straight after.
+
+The botnet feature is very new and hasn't been extensively tested but I am confident that it works fine
+since there's no actual reason that it shouldn't fail with anything more advanced, ie. SYN attacks.
+
+If a feature doesn't seem to work, make an issue and include as much detail as possible.
+OS version, architecture, output of the log files, etc.
+
 NEITHER I NOR ANY PERSON INVOLVED IN THE CREATION OF THIS SCRIPT TAKE ANY RESPONSIBILITY FOR THE
 DAMAGES THAT MAY BE CAUSED BY THE SCRIPT. NO EXCEPTIONS.
