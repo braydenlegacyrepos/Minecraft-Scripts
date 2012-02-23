@@ -70,6 +70,10 @@ due to the standard delay to take into account lag and such, it might take a whi
 Modify dos-dialog.sh to not have a sleep in the function master to remove this delay and just send it without
 regard for lag etc.
 
+Authentication is done by sending a passphrase you can configure (and should do) on the slave by modifying the
+dos-dialog.sh file. The passphrase set by default to "default" and should be changed immediately after downloading.
+Change line 153 to do this.
+
 Instructions:
 
 On the remote machines, put dos-dialog.sh and remote-stop.sh on them. remote-stop.sh will run in an infinite loop
