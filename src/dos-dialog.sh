@@ -137,7 +137,8 @@ elif [ "$1" = "stop" ] || [  "$1" = "Stop" ]; then
     while read p; do
     SLAVE_IP=`echo ${p} | awk '{printf $1}'`
     SLAVE_PORT=`echo ${p} | awk '{printf $3}'`
-    echo "stop hping3" | nc ${SLAVE_IP} ${SLAVE_PORT}
+    SLAVE_PASSPHRASE=`echo ${p} | awk '{printf $4}'`
+    echo "stop hping3 ${SLAVE_PASSPHRASE}" | nc ${SLAVE_IP} ${SLAVE_PORT}
     echo "Sent stop packet to ${SLAVE_IP} on port ${SLAVE_PORT}"
     done < .ip_list
     exit 0
