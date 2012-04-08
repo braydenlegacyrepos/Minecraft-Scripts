@@ -44,26 +44,25 @@ of the files/folders required and check whether dialog and hping3 are present.
 
 It does not give instructions on how to install both programs and it also is not guaranteed to work on
 other systems than the ones we use (Ubuntu). Dialog and hping3 are not included by default in the system
-but in Ubuntu's repos both are there.
+but in Ubuntu's repos both are present.
 
 -----
 Usage
 -----
+(Not case sensitive)
 
 dos-dialog.sh Install - perform the install functions to make sure that the script will work.
 
 dos-dialog.sh Unattended - automatically perform the DoS using the previous parameters.
 
-dos-dialog.sh History - offer the user to redo past attacks.
-
-dos-dialog.sh Slave - place it into listening mode. Optionally takes a second argument which is the port number
-to listen on, in case you want to launch the script without user input.
+dos-dialog.sh History - offer the user to redo past attacks. Optionally takes an argument to run with a file
+automatically, instead of having to choose.
 
 dos-dialog.sh Master - read data from ~/.dos_history/.ip_list to connect to other machines to perform the attack.
 
 dos-dialog.sh Stop - read data from ~/.dos_history/.ip_list and send a stop command to the other machines.
 
-dos-dialog.sh Add - (UNTESTED) Add machines to ~/.dos_history/.ip_list
+dos-dialog.sh Add - Add machines to ~/.dos_history/.ip_list
 
 dos-dialog.sh - Launch standalone attack with GUI options. Options will be populated with the last attack
 parameters, otherwise if you've performed install they should be replaced with example information.

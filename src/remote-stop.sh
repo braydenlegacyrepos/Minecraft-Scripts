@@ -1,5 +1,5 @@
 #!/bin/bash
-DEFAULT_PORT[1]=111
+DEFAULT_PORT[1]=100
 SCRIPT_NAME=~/dos-dialog.sh
 #Change this
 PASSPHRASE=default
