@@ -1,3 +1,21 @@
+----------------------------------------------------
+Likely-to-be-FAQ-if-anyone-actually-used-this-script
+----------------------------------------------------
+
+Q: HELP! I get:
+grep: /root/.dos_history/.last_dos: No such file or directory
+grep: /root/.dos_history/.last_dos: No such file or directory
+grep: /root/.dos_history/.last_dos: No such file or directory
+grep: /root/.dos_history/.last_dos: No such file or directory
+grep: /root/.dos_history/.last_dos: No such file or directory
+./dos-dialog.sh: line 52: [: =: unary operator expected
+./dos-dialog.sh: line 54: [: =: unary operator expected
+./dos-dialog.sh: line 56: [: =: unary operator expected
+./dos-dialog.sh: line 58: [: =: unary operator expected
+Answer:
+Run ./dos-dialog Install and try again.
+It occurs when the files expected are not found, running the install parameter will create these files.
+
 -----
 About
 -----
@@ -57,39 +75,51 @@ non capitalised variants, e.g. dos-dialog.sh install.
 Botnet
 ------
 
-Specific functionality with this requires that the user have netcat installed, and also be able to run a script.
+Specific functionality with this requires that the user have netcat installed and permission to open sockets.
 
-The remote-stop.sh script should either run as a daemon or just in a screen or TTY that won't close.
-It accepts two bits of data at the moment, "stop hping3" which will stop the attack, and "listen start",
-which will launch dos-dialog.sh Slave 111 by default. It is possible to change this of course.
-
-It backgrounds dos-dialog.sh but stdout is written to the TTY that the daemon is running in.
+The remote-stop.sh script should either run as a daemon or just in a screen/TTY that won't close.
+It accepts two bits of data at the moment, "stop hping3 slave_passphrase" which will stop the attack, and
+"listen start slave_passphrase", which will then close and reopen on the same port and save whatever it receives to
+/tmp/dos.tmp and then execute dos-dialog.sh with the parameters "History /tmp/dos.tmp &". dos-dialog.sh will verify
+the file exists, if not, it'll exit with exit code 1 and print an error which should be visible in the screen/TTY
+as while & forks it to the background, it still shows stdout.
 
 Presumably there's no limit on the amount of machines you can have this setup for, if you have a lot though,
 due to the standard delay to take into account lag and such, it might take a while for the script to complete.
-Modify dos-dialog.sh to not have a sleep in the function master to remove this delay and just send it without
-regard for lag etc.
+Modify dos-dialog.sh to not have a sleep (or shorter sleep) in the function master to remove this delay and just send
+it without regard for lag etc.
 
-Authentication is done by sending a passphrase you can configure (and should do) on the slave by modifying the
-dos-dialog.sh file. The passphrase set by default to "default" and should be changed immediately after downloading.
-Change line 153 to do this.
+Authentication involves suffixing the packets to be received by remote-stop to include a configurable string.
+This string is the passphrase and acts as a very simple authentication and should not be used to store sensitive
+information, since it is NOT encrypted!
+Passphrase is stored in remote-stop.sh and set to "default" by default.
 
 Instructions:
 
 On the remote machines, put dos-dialog.sh and remote-stop.sh on them. remote-stop.sh will run in an infinite loop
 and is not likely to ever reach a condition that will cause it to exit. I recommend you set it up as an init
-script. Configure remote-stop.sh to have a listening port of your choice (not necessarily required but some
-servers could actually be using that port) and also configure the SCRIPT_NAME variable to point to your script.
+script to spawn a screen and launch the script in there: "screen -mdLS screen-name ~/remote-stop.sh" is an example.
+Configure remote-stop.sh to have a listening port of your choice (not necessarily required but some servers could
+actually be using that port) and also configure the SCRIPT_NAME variable to point to dos-dialog.sh, wherever it may be,
+or whatever it is named.
 
 Afterwards on the master server, use ./dos-dialog.sh Add to add all the machines, then test them. You could
-test them by doing ./dos-dialog.sh Master; ./dos-dialog.sh stop
+test them by doing ./dos-dialog.sh Master; ./dos-dialog.sh Stop
 Select your target and the attack should stop fairly instantly as the next command would run straight after.
 
-The botnet feature is very new and hasn't been extensively tested but I am confident that it works fine
-since there's no actual reason that it shouldn't fail with anything more advanced, ie. SYN attacks.
+The botnet feature is a bit more complicated then the rest of the script and tends to get broken fairly easy.
+It has been broken for a while but with a small re write to how it works, it seems to work fine again.
+I cannot guarantee that this function will work as expected nor or in the future.
 
 If a feature doesn't seem to work, make an issue and include as much detail as possible.
-OS version, architecture, output of the log files, etc.
+OS version, architecture, any output, etc.
+
+----------------------
+UNINSTALLATION/REMOVAL
+----------------------
+
+To remove any files related to this script, just do "rm -r ~/.dos_history/" and if /tmp/dos.tmp exists, remove it.
+That should be all.
 
 NEITHER I NOR ANY PERSON INVOLVED IN THE CREATION OF THIS SCRIPT TAKE ANY RESPONSIBILITY FOR THE
 DAMAGES THAT MAY BE CAUSED BY THE SCRIPT. NO EXCEPTIONS.

