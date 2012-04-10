@@ -15,6 +15,8 @@ check_form 1
 FORM[2]=`zenity --confirm-overwrite --file-selection --title="${TITLE}" --save --filename="${FORM[1]}.ltx"`
 check_form 2
 touch ${FORM[2]}
+echo '<!--' >> ${FORM[2]}
+echo -e "Placeholder until it doesn't need comments anymore.\n-->" >> ${FORM[2]}
 echo "<root Name=\"${FORM[1]}\">" >> ${FORM[2]}
 echo -e "\n<packages>" >> ${FORM[2]}
 while true; do
