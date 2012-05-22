@@ -3,6 +3,13 @@ lower_args=`echo $1 | tr [:upper:] [:lower:]`
 if [ ! ${lower_args} ]; then
     lower_args=noargs
 fi
+if [ ! -d ~/dos_history/ ] && [ ${lower_args} != "install" ]; then
+    echo "Error 37"
+    sleep 1
+    echo "~/dos_history/ is missing. The following dialogs will be strange and weird and not work."
+    echo "Run with the argument \"install\" next time."
+    echo "$0 install"
+fi
 if [ ${lower_args} = "install" ]; then
     if [ ! -d ~/.dos_history/ ]; then
         mkdir ~/.dos_history/
@@ -10,8 +17,7 @@ if [ ${lower_args} = "install" ]; then
     else
         echo "Found ${HOME}/.dos_history"
     fi
-    DIALOG_VER=`whereis dialog | awk '{printf $2}'`
-    if [ "${DIALOG_VER}" ]; then
+    if [ `whereis dialog | awk '{printf $2}'` ]; then
         echo "Found dialog"
     else
         echo "dialog does not appear to be installed."
@@ -27,8 +33,7 @@ Last_Spoof_Host: example.com" > ~/.dos_history/.last_dos
     else
         echo "Found ${HOME}/.dos_history/.last_dos"
     fi
-    HPING3_TEST=`whereis hping3 | awk '{printf $2}'`
-    if [ "${HPING3_TEST}" ]; then
+    if [ `whereis hping3 | awk '{printf $2}'` ]; then
         echo "Found hping3"
     else
         echo "hping3 does not appear to be installed."
@@ -89,7 +94,7 @@ elif [ ${SYN} = on ]; then
 elif [ ${ICMP} = on ]; then
     PROTOCOL=ICMP
 fi
-BACKTITLE="Pro DoS v0.1337rc2"
+BACKTITLE="Pro DoS v0.1337rc3"
 function func_history {
 echo "Protocol: ${PROTOCOL}"
 echo "IP: ${LAST_IP}"
