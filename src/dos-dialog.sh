@@ -3,13 +3,7 @@ lower_args=`echo $1 | tr [:upper:] [:lower:]`
 if [ ! ${lower_args} ]; then
     lower_args=noargs
 fi
-if [ ! -d ~/dos_history/ ] && [ ${lower_args} != "install" ]; then
-    echo "Error 37"
-    sleep 1
-    echo "~/dos_history/ is missing. The following dialogs will be strange and weird and not work."
-    echo "Run with the argument \"install\" next time."
-    echo "$0 install"
-fi
+
 if [ ${lower_args} = "install" ]; then
     if [ ! -d ~/.dos_history/ ]; then
         mkdir ~/.dos_history/
@@ -42,7 +36,7 @@ Last_Spoof_Host: example.com" > ~/.dos_history/.last_dos
     echo "Would you like to continue?"
     printf "[Y/N] [Y]: "
     read ANSWER
-    if [ `${ANSWER} | tr [:upper:] [:lower:]` = "n" ]; then
+    if [ `echo ${ANSWER} | tr [:upper:] [:lower:]` = "n" ]; then
         exit 0
     fi
 elif [ ${lower_args} = "remove" ]; then
@@ -62,6 +56,15 @@ elif [ ${lower_args} = "remove" ]; then
     echo "Files removed. You can remove $0 now."
     exit 0
 fi
+if [ ! -d ~/.dos_history/ ]; then
+    echo "Error 37"
+    sleep 1
+    echo "~/dos_history/ is missing. The following dialogs will be strange and weird and not work."
+    echo "Run with the argument \"install\" next time."
+    echo "$0 install"
+    exit 0
+fi
+
 function dos_history {
 LAST_IP=`grep -w 'Last_IP:' $1 | awk '{printf $2}'`
 LAST_PROTOCOL=`grep -w 'Last_Protocol:' $1 | awk '{printf $2}'`
@@ -94,7 +97,7 @@ elif [ ${SYN} = on ]; then
 elif [ ${ICMP} = on ]; then
     PROTOCOL=ICMP
 fi
-BACKTITLE="Pro DoS v0.1337rc3"
+BACKTITLE="Pro DoS v0.1337rc4"
 function func_history {
 echo "Protocol: ${PROTOCOL}"
 echo "IP: ${LAST_IP}"
@@ -170,8 +173,9 @@ elif [ ${lower_args} = "master" ]; then
     #    dos_history ${DOS_SESSION_FILE}
     #    func_history
     #fi
-    exit 0
+    #exit 0
     done
+
 elif [ ${lower_args} = "stop" ]; then
     echo "Make sure a third field is in ~/.dos_history/.ip_list and a daemon running on the machine."
     cd ~/.dos_history
