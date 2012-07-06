@@ -59,7 +59,7 @@ fi
 if [ ! -d ~/.dos_history/ ]; then
     echo "Error 37"
     sleep 1
-    echo "~/dos_history/ is missing. The following dialogs will be strange and weird and not work."
+    echo "~/.dos_history/ is missing. The following dialogs will be strange and weird and not work."
     echo "Run with the argument \"install\" next time."
     echo "$0 install"
     exit 0
