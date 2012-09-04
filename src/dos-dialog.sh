@@ -1,4 +1,42 @@
+# This script is licensed now under the WTFPL
+#            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+#                    Version 2, December 2004
+#
+# Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+#
+# Everyone is permitted to copy and distribute verbatim or modified
+# copies of this license document, and changing it is allowed as long
+# as the name is changed.
+#
+#            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+#   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+#
+#  0. You just DO WHAT THE FUCK YOU WANT TO.
+#
+# http://sam.zoy.org/wtfpl/
 #!/bin/bash
+BACKTITLE="Pro DoS v0.1337rc5"
+LATEST_VERSION=`curl --silent https://raw.github.com/braydenhull/Minecraft-Scripts/master/src/dos-dialog.version`
+if [ "${BACKTITLE}" != "${LATEST_VERSION}" ]; then
+    echo "It appears there's a new version of \"Pro DoS\" available."
+    echo "Version: ${LATEST_VERSION}"
+    echo "Would you like to update?"
+    printf "[Y/N] [Y]: "
+    read ANSWER
+    if [ "`echo ${ANSWER} | tr [:upper:] [:lower:]`" = "y" ]; then
+        echo "Removing current shell script."
+        rm -f $0
+        echo "Downloading new one"
+        wget -q https://raw.github.com/braydenhull/Minecraft-Scripts/master/src/dos-dialog.sh
+        chmod +x dos-dialog.sh
+        echo "Done."
+        if [ -e dos-dialog.sh ]; then
+            echo "It appears dos-dialog.sh is present. Whether it works is another matter ;)"
+            echo "Exiting now, you should start the script again by doing: $0"
+            exit 0
+        fi
+    fi
+fi
 lower_args=`echo $1 | tr [:upper:] [:lower:]`
 if [ ! ${lower_args} ]; then
     lower_args=noargs
@@ -97,7 +135,6 @@ elif [ ${SYN} = on ]; then
 elif [ ${ICMP} = on ]; then
     PROTOCOL=ICMP
 fi
-BACKTITLE="Pro DoS v0.1337rc4"
 function func_history {
 echo "Protocol: ${PROTOCOL}"
 echo "IP: ${LAST_IP}"
