@@ -15,7 +15,7 @@
 #
 # http://sam.zoy.org/wtfpl/
 #!/bin/bash
-BACKTITLE="Pro DoS v0.1337rc5"
+BACKTITLE="Pro DoS v0.1337rc6"
 LATEST_VERSION=`curl --silent https://raw.github.com/braydenhull/Minecraft-Scripts/master/src/dos-dialog.version`
 if [ "${BACKTITLE}" != "${LATEST_VERSION}" ]; then
     echo "It appears there's a new version of \"Pro DoS\" available."
@@ -23,7 +23,7 @@ if [ "${BACKTITLE}" != "${LATEST_VERSION}" ]; then
     echo "Would you like to update?"
     printf "[Y/N] [Y]: "
     read ANSWER
-    if [ "`echo ${ANSWER} | tr [:upper:] [:lower:]`" = "y" ]; then
+    if [ "`echo ${ANSWER} | tr [:upper:] [:lower:]`" = "y" ] || [ "${ANSWER}" = "" ]; then
         echo "Removing current shell script."
         rm -f $0
         echo "Downloading new one"
